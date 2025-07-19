@@ -15,15 +15,15 @@ const ProjectSchema = new Schema({
   submittedMonth: {
     type: String, // e.g., "2025-06"
     required: true,
-    default: null
+    default: null,
   },
   isCompeting: { type: Boolean, default: false },
   voters: [
-  {
-    userId: { type: Schema.Types.ObjectId, ref: 'User' },
-    month: String, // e.g., "2025-06"
-  },
-],
+    {
+      userId: { type: Schema.Types.ObjectId, ref: 'User' },
+      month: String, // e.g., "2025-06"
+    },
+  ],
 });
 
 module.exports = mongoose.model('Project', ProjectSchema);

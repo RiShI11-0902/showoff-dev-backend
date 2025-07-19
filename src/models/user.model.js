@@ -56,7 +56,7 @@ const UserSchema = new Schema({
   linkedin: String,
   github: String,
   bio: String,
-  avatar: {type: String, default: null},
+  avatar: { type: String, default: null },
   videoIntroUrl: String,
   videoViews: { type: Number, default: 0 }, // Track total views
   videoLikes: { type: Number, default: 0 }, // Total likes count
