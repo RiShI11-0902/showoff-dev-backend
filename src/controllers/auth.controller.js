@@ -12,7 +12,6 @@ const jwt = require('jsonwebtoken');
 
 // Email Template
 const {
-  singUpConfirmationEmailTemplate,
   forgotPasswordEmailTemplate,
   resetPasswordConfirmationEmailTemplate,
 } = require('../template/userAccountEmailTemplates');
@@ -31,13 +30,13 @@ const { sendEmail, FROM_EMAIL, API_ENDPOINT } = require('../utils/helpers');
  */
 const signUp = async (req, res) => {
   try {
-    const { email, password, fullName, role, is_active } = req.body;
+    const { email, password, fullName, role } = req.body;
 
     // Check if email and password are provided
     if (!email || !password) {
       return res.status(403).json({
         success: false,
-        message: 'Veuillez saisir votre email ou votre mot de passe',
+        message: 'Please Enter Email Password',
       });
     }
 
@@ -46,7 +45,7 @@ const signUp = async (req, res) => {
     if (existingUser) {
       return res.status(409).json({
         success: false,
-        message: 'Un utilisateur avec cet e-mail existe déjà',
+        message: 'User already Exists',
       });
     }
 
@@ -56,9 +55,8 @@ const signUp = async (req, res) => {
       password,
       confirmationCode: crypto.randomBytes(20).toString('hex'),
       fullName,
-      photo: req.files?.photo ? req.files.photo[0].path.replace('\\', '/') : '',
-      is_active: is_active ?? false,
       role,
+      // photo: req.files?.photo ? req.files.photo[0].path.replace('\\', '/') : '',
       joined_at: new Date(),
     });
 
@@ -66,30 +64,35 @@ const signUp = async (req, res) => {
     await newUser.save();
 
     // Send confirmation email
-    const template = singUpConfirmationEmailTemplate(
-      newUser.fullName,
-      API_ENDPOINT,
-      newUser.email,
-      newUser.confirmationCode,
-    );
+    // const template = singUpConfirmationEmailTemplate(
+    //   newUser.fullName,
+    //   API_ENDPOINT,
+    //   newUser.email,
+    //   newUser.confirmationCode,
+    // );
 
-    const data = {
-      from: FROM_EMAIL,
-      to: newUser.email,
-      subject: 'Confirmation de votre enregistrement sur l’application',
-      html: template,
-    };
+    // const data = {
+    //   from: FROM_EMAIL,
+    //   to: newUser.email,
+    //   subject: 'Confirmation of your registration on the application.',
+    //   html: template,
+    // };
 
-    await sendEmail(data);
+    // await sendEmail(data);
+
+    const token = jwt.sign(newUser.toJSON(), process.env.SECRET, {
+      expiresIn: '7d', // Token expires in 7 days
+    });
 
     return res.json({
-      message: "Veuillez vérifier votre e-mail pour plus d'instructions",
+      success: true,
+      user: newUser,
+      token: token,
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message:
-        "Une erreur est survenue lors de l'enregistrement de l'utilisateur",
+      message: 'An error occurred while registering the user.',
       error: error.message,
     });
   }
@@ -111,7 +114,7 @@ const signIn = async (req, res) => {
     if (!foundUser || !foundUser.comparePassword(password)) {
       return res.status(403).json({
         success: false,
-        message: "Échec de l'authentification, email ou mot de passe incorrect",
+        message: 'Authentication failed, incorrect email or password.',
       });
     }
 
@@ -143,7 +146,7 @@ const signIn = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: "Une erreur est survenue lors de l'authentification",
+      message: 'An error occurred during authentication.',
       error: error.message,
     });
   }

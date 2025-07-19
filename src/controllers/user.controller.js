@@ -30,7 +30,13 @@ const checkExistEmail = async (req, res) => {
  */
 const getCurrentUser = async (req, res) => {
   try {
-    const foundUser = await User.findById(req.decoded._id);
+    const foundUser = await User.findById(req.decoded._id).populate({
+      path: 'projects',
+      populate: {
+        path: 'user',
+        // select: 'fullName email avatar github ',
+      },
+    });
     res
       .status(foundUser ? 200 : 404)
       .json({ success: !!foundUser, user: foundUser });
@@ -46,7 +52,7 @@ const getCurrentUser = async (req, res) => {
  */
 const getUserById = async (req, res) => {
   try {
-    const foundUser = await User.findById(req.params.id);
+    const foundUser = await User.findById(req.params.id).populate('projects');
     res
       .status(foundUser ? 200 : 404)
       .json({ success: !!foundUser, user: foundUser });
