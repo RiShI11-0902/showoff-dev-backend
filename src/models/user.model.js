@@ -8,18 +8,72 @@ const bcrypt = require('bcrypt-nodejs');
 /* -------------------------------------------------------------------------- */
 /*                                 User Schema                                */
 /* -------------------------------------------------------------------------- */
+
+const WorkExperienceItemSchema = new Schema(
+  {
+    company: String,
+    position: String,
+    startDate: String,
+    endDate: String,
+    description: String,
+    technologies: [String],
+  },
+  { _id: false },
+);
+
+const EducationItemSchema = new Schema(
+  {
+    institution: String,
+    degree: String,
+    fieldOfStudy: String,
+    startDate: String,
+    endDate: String,
+    marks: String,
+  },
+  { _id: false },
+);
+
 const UserSchema = new Schema({
   email: { type: String, unique: true, required: true },
   password: { type: String, required: true },
+
+  // Existing fields
   fullName: String,
   photo: String,
-  is_active: Boolean,
-  role: { type: String, require: true }, // is_manager, is_admin, is_user
+  is_active: { type: Boolean, default: true },
+  role: { type: String }, // is_manager, is_admin, is_user
   confirmationCode: String,
   resetPasswordToken: String,
   resetPasswordExpires: String,
   joined_at: Date,
   updated_at: Date,
+  title: String,
+
+  // New fields
+  phone: String,
+  location: String,
+  portfolio: String,
+  linkedin: String,
+  github: String,
+  bio: String,
+  avatar: {type: String, default: null},
+  videoIntroUrl: String,
+  videoViews: { type: Number, default: 0 }, // Track total views
+  videoLikes: { type: Number, default: 0 }, // Total likes count
+  likedBy: [{ type: Schema.Types.ObjectId, ref: 'User' }], // Who liked this video
+  experience: String,
+  availability: String,
+  skills: [String],
+  workExperience: [WorkExperienceItemSchema],
+  education: [EducationItemSchema],
+  certifications: [String],
+  projects: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
+  participationHistory: [
+    {
+      month: String, // Format: "2025-06"
+      projectId: { type: Schema.Types.ObjectId, ref: 'Project' },
+    },
+  ],
 });
 
 /* -------------------------------------------------------------------------- */
@@ -31,7 +85,7 @@ const UserSchema = new Schema({
  */
 UserSchema.pre('save', function (next) {
   let user = this;
-  if (this.isModified('password' || this.isNew)) {
+  if (this.isModified('password') || this.isNew) {
     // generate 10 length random characters
     bcrypt.genSalt(10, function (err, salt) {
       if (err) {
