@@ -3,273 +3,324 @@
   "info": {
     "version": "1.0.0",
     "title": "Core API",
-    "description": "Backend for any application documented with Swagger",
+    "description": "API for Auth and Project features",
     "license": {
       "name": "MIT",
       "url": "https://spdx.org/licenses/MIT.html"
     },
     "contact": {
-      "name": "Raed Fadhlaoui",
-      "url": "https://www.linkedin.com/in/fadhlaouiraed/",
-      "email": "raed.fadhlaoui@hotmail.com"
+      "name": "Your Name",
+      "email": "your.email@example.com"
     }
   },
   "host": "localhost:5000",
   "basePath": "/v1/api",
-  "tags": [
-    {
-      "name": "Auth",
-      "description": "API for authentification in the system"
-    },
-    {
-      "name": "Account",
-      "description": "API for user account in the system"
-    },
-    {
-      "name": "Users",
-      "description": "API for users in the system"
-    },
-    {
-      "name": "Event/News",
-      "description": "API for article in the system"
-    }
-  ],
   "schemes": ["http"],
   "consumes": ["application/json"],
   "produces": ["application/json"],
-  "paths": {
-    "/auth/user-email": {
-      "post": {
-        "summary": "Check if we have the email exist in our Database or not",
-        "tags": ["Auth"],
-        "description": "Check if we have the email exist in our Database or not",
-        "parameters": [
-          {
-            "name": "user",
-            "in": "body",
-            "description": "email that we want to verify if we have in our database or not",
-            "schema": {
-              "$ref": "#/definitions/email"
-            }
-          }
-        ],
-        "produces": ["application/json"],
-        "responses": {
-          "200": {
-            "description": "success: true"
-          },
-          "403": {
-            "description": "Email existe déjà"
-          }
-        }
-      }
+  "securityDefinitions": {
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter JWT token in the format: Bearer <token>"
+    }
+  },
+  "security": [
+    {
+      "Bearer": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Authentication endpoints"
     },
-    "/auth/signup": {
+    {
+      "name": "Projects",
+      "description": "Project-related operations"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
       "post": {
-        "summary": "Create new user",
         "tags": ["Auth"],
-        "description": "Create new user",
+        "summary": "Register a new user",
         "parameters": [
           {
             "name": "user",
             "in": "body",
-            "description": "User that we want to create",
+            "required": true,
             "schema": {
               "$ref": "#/definitions/newUser"
             }
           }
         ],
-        "produces": ["application/json"],
         "responses": {
           "200": {
-            "description": "New user is created",
-            "schema": {
-              "$ref": "#/definitions/User"
-            }
+            "description": "User registered successfully"
           },
-          "UnauthorizedError": {
-            "description": "Authentication information is missing or invalid"
+          "400": {
+            "description": "Invalid input"
           }
         }
       }
     },
     "/auth/login": {
       "post": {
-        "summary": "Sigin with an existing user",
         "tags": ["Auth"],
-        "description": "Login with an existing user",
+        "summary": "Log in user",
         "parameters": [
           {
             "name": "user",
             "in": "body",
-            "description": "User that we already have in our databse",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/newUser"
+              "$ref": "#/definitions/logInUser"
             }
           }
         ],
-        "produces": ["application/json"],
         "responses": {
           "200": {
-            "description": "OK (successfully authenticated)"
+            "description": "User logged in"
           },
-          "UnauthorizedError": {
-            "description": "Authentication information is missing or invalid"
+          "403": {
+            "description": "Authentication failed"
           }
         }
       }
     },
-    "/auth/forget-password": {
+    "/project": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get all projects",
+        "responses": {
+          "200": {
+            "description": "List of all projects"
+          }
+        }
+      },
       "post": {
-        "summary": "Send email to reset password",
-        "tags": ["Auth"],
-        "description": "Forget Password to send email",
+        "tags": ["Projects"],
+        "summary": "Create a new project",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "parameters": [
           {
-            "name": "user",
+            "name": "project",
             "in": "body",
-            "description": "User that we need to reset password",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/forgetUserPassword"
+              "$ref": "#/definitions/Project"
             }
           }
         ],
-        "produces": ["application/json"],
         "responses": {
           "200": {
-            "description": "OK (Email Sent)"
-          },
-          "UnauthorizedError": {
-            "description": "User not found"
+            "description": "Project created"
           }
         }
       }
     },
-    "/auth/reset-password/{token}": {
-      "parameters": [
-        {
-          "name": "token",
-          "in": "path",
-          "required": true,
-          "description": "token of user password that we want to find",
-          "type": "string"
-        }
-      ],
-      "post": {
-        "summary": "Create new password",
-        "tags": ["Auth"],
-        "description": "Reset Password",
+    "/project/user/{userId}": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get projects by user ID",
         "parameters": [
           {
-            "name": "user",
-            "in": "body",
-            "description": "User that we need to reset password",
-            "schema": {
-              "$ref": "#/definitions/resetUserPassword"
-            }
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
-        "produces": ["application/json"],
         "responses": {
           "200": {
-            "description": "OK (Password Updated)"
-          },
-          "UnauthorizedError": {
-            "description": "Password reset token is invalid or has expired"
+            "description": "Projects for the user"
           }
         }
       }
     },
-    "/account/{id}/disable": {
-      "parameters": [
-        {
-          "name": "userId",
-          "in": "path",
-          "required": true,
-          "description": "ID of user that we want to find",
-          "type": "string"
+    "/project/{projectId}": {
+      "get": {
+        "tags": ["Projects"],
+        "summary": "Get a project by ID",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project details"
+          },
+          "404": {
+            "description": "Project not found"
+          }
         }
-      ],
+      },
       "put": {
-        "summary": "Disable user account with given ID",
-        "tags": ["Account"],
-        "responses": {
-          "200": {
-            "description": "Account Disabled"
-          }
-        }
-      }
-    },
-    "/account/{token}/enable": {
-      "post": {
-        "summary": "Enable user account with given email and password",
-        "description": "Enable user account",
-        "tags": ["Account"],
+        "tags": ["Projects"],
+        "summary": "Update a project by ID",
         "parameters": [
           {
-            "name": "user",
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "project",
             "in": "body",
-            "description": "User that we already have in our databse",
+            "required": true,
             "schema": {
-              "$ref": "#/definitions/newUser"
+              "$ref": "#/definitions/Project"
             }
           }
         ],
-        "produces": ["application/json"],
         "responses": {
           "200": {
-            "description": "OK (successfully Activate account)"
-          },
-          "UnauthorizedError": {
-            "description": "Authentication information is missing or invalid"
+            "description": "Project updated"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Projects"],
+        "summary": "Delete a project by ID",
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Project deleted"
           }
         }
       }
     },
-    "/users": {
+    "/project/{projectId}/vote": {
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Vote for a project",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vote recorded"
+          }
+        }
+      }
+    },
+    "/project/{projectId}/submit": {
+      "post": {
+        "tags": ["Projects"],
+        "summary": "Submit Project for Competition",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "projectId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Vote recorded"
+          }
+        }
+      }
+    },
+    "/users/me": {
       "get": {
         "tags": ["Users"],
-        "summary": "Get all users",
+        "summary": "Get current authenticated user",
+        "description": "Returns the currently authenticated user's profile",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Return Array of users",
+            "description": "User object returned",
             "schema": {
-              "$ref": "#/definitions/Users"
+              "$ref": "#/definitions/User"
             }
+          },
+          "403": {
+            "description": "No token provided or token invalid"
           }
         }
       }
     },
     "/users/{id}": {
-      "parameters": [
-        {
-          "name": "userId",
-          "in": "path",
-          "required": true,
-          "description": "ID of user that we want to find",
-          "type": "string"
-        }
-      ],
       "get": {
         "tags": ["Users"],
-        "summary": "Get user with given ID",
+        "summary": "Get user by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
             "description": "User is found",
             "schema": {
               "$ref": "#/definitions/User"
             }
+          },
+          "404": {
+            "description": "User not found"
           }
         }
       },
       "put": {
-        "summary": "Update user with give ID",
         "tags": ["Users"],
+        "summary": "Update user by ID",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
           {
             "name": "user",
             "in": "body",
-            "description": "User with new values of properties",
             "schema": {
               "$ref": "#/definitions/User"
             }
@@ -277,7 +328,7 @@
         ],
         "responses": {
           "200": {
-            "description": "User is updated",
+            "description": "User updated",
             "schema": {
               "$ref": "#/definitions/User"
             }
@@ -285,168 +336,146 @@
         }
       },
       "delete": {
-        "summary": "Delete user with given ID",
         "tags": ["Users"],
-        "responses": {
-          "200": {
-            "description": "User is deleted"
-          }
-        }
-      }
-    },
-    "/event": {
-      "post": {
-        "summary": "Create new event",
-        "tags": ["Event/News"],
-        "description": "Create new Event",
-        "parameters": [
+        "summary": "Delete user by ID",
+        "security": [
           {
-            "name": "user",
-            "in": "body",
-            "description": "Event that we want to create",
-            "schema": {
-              "$ref": "#/definitions/newEvent"
-            }
+            "Bearer": []
           }
         ],
-        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "New Event is created",
-            "schema": {
-              "$ref": "#/definitions/Event"
-            }
+            "description": "User deleted"
           }
         }
       }
     },
-    "/events": {
+    "/winner": {
       "get": {
-        "tags": ["Event/News"],
-        "summary": "Get all Events",
+        "tags": ["Winner"],
+        "summary": "Get all winning projects",
+        "description": "Returns all projects that have won in previous competitions. Optionally filter by month.",
+        "parameters": [
+          {
+            "name": "month",
+            "in": "query",
+            "description": "Month in format YYYY-MM (e.g., 2025-06) to filter winners",
+            "required": false,
+            "type": "string"
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Return Array of Events",
+            "description": "List of winning projects",
             "schema": {
-              "$ref": "#/definitions/Event"
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Project"
+              }
             }
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
-      }
-    },
-    "/events/{Id}": {
-      "parameters": [
-        {
-          "name": "Id",
-          "in": "path",
-          "required": true,
-          "description": "ID of article that we want to find",
-          "type": "string"
-        }
-      ],
-      "get": {
-        "tags": ["Event/News"],
-        "summary": "Get Event with given ID",
+      },
+      "post": {
+        "tags": ["Winner"],
+        "summary": "Decide current month winner",
+        "description": "Determines and stores the winning project for the current month.",
+        "security": [
+          {
+            "Bearer": []
+          }
+        ],
         "responses": {
           "200": {
-            "description": "Event is found",
+            "description": "Winner selected and saved",
             "schema": {
-              "$ref": "#/definitions/Event"
+              "$ref": "#/definitions/Project"
             }
           },
           "403": {
-            "description": "Event not found"
-          }
-        }
-      },
-      "put": {
-        "summary": "Update Event with give ID",
-        "tags": ["Event/News"],
-        "parameters": [
-          {
-            "name": "Event",
-            "in": "body",
-            "description": "Event with new values of properties",
-            "schema": {
-              "$ref": "#/definitions/Event"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Event is updated",
-            "schema": {
-              "$ref": "#/definitions/Event"
-            }
-          }
-        }
-      },
-      "delete": {
-        "summary": "Delete Event with given ID",
-        "tags": ["Event/News"],
-        "responses": {
-          "200": {
-            "description": "Event is deleted"
+            "description": "Access denied - Admin only"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }
     }
   },
   "definitions": {
-    "email": {
-      "required": ["email"],
+    "logInUser": {
+      "required": ["email", "password"],
       "properties": {
         "email": {
-          "type": "string",
-          "uniqueItems": true
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
         }
       }
     },
     "newUser": {
-      "required": ["email", "password"],
+      "required": ["email", "password", "fullName", "role"],
       "properties": {
         "email": {
-          "type": "string",
-          "uniqueItems": true
+          "type": "string"
         },
         "password": {
-          "type": "string",
-          "format": "password"
-        }
-      }
-    },
-    "forgetUserPassword": {
-      "required": ["email"],
-      "properties": {
-        "email": {
-          "type": "string",
-          "uniqueItems": true
-        }
-      }
-    },
-    "resetUserPassword": {
-      "required": ["resetPasswordToken", "resetPasswordExpires"],
-      "properties": {
-        "resetPasswordToken": {
-          "type": "string",
-          "format": "password"
+          "type": "string"
         },
-        "resetPasswordExpires": {
-          "type": "string",
-          "format": "password"
+        "fullName": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string"
+        }
+      }
+    },
+    "Project": {
+      "required": ["title", "description"],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "link": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "technologies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isCompeting": {
+          "type": "boolean"
         }
       }
     },
     "User": {
-      "required": ["email", "password"],
+      "type": "object",
       "properties": {
         "email": {
-          "type": "string",
-          "uniqueItems": true
+          "type": "string"
         },
         "password": {
-          "type": "string",
-          "format": "password"
+          "type": "string"
         },
         "fullName": {
           "type": "string"
@@ -454,184 +483,123 @@
         "photo": {
           "type": "string"
         },
-        "canHelpWith": {
-          "type": "string"
-        },
-        "governorate": {
-          "type": "string"
-        },
-        "municipality": {
-          "type": "string"
-        },
-        "age": {
-          "type": "Number"
-        },
-        "gender": {
-          "type": "string"
-        },
-        "dateOfBirth": {
-          "type": "string"
-        },
-        "phoneNumber": {
-          "type": "string"
-        },
-        "whatsappNumber": {
-          "type": "string"
-        },
-        "bloodType": {
-          "type": "string"
-        },
-        "bloodHelpCount": {
-          "type": "Number"
-        },
-        "materialHelpCount": {
-          "type": "Number"
-        },
-        "is_volunteer": {
-          "type": "boolean"
-        },
-        "is_doner": {
-          "type": "boolean"
-        },
         "is_active": {
           "type": "boolean"
         },
-        "is_anonymous": {
-          "type": "boolean"
+        "role": {
+          "type": "string"
         },
-        "is_admin": {
-          "type": "boolean"
+        "confirmationCode": {
+          "type": "string"
         },
-        "is_manager": {
-          "type": "boolean"
+        "resetPasswordToken": {
+          "type": "string"
         },
-        "last_donation": {
-          "type": "number",
-          "format": "string"
-        }
-      }
-    },
-    "Users": {
-      "type": "array",
-      "$ref": "#/definitions/User"
-    },
-    "newEvent": {
-      "properties": {
-        "gallery": {
+        "resetPasswordExpires": {
+          "type": "string"
+        },
+        "joined_at": {
+          "type": "string"
+        },
+        "updated_at": {
+          "type": "string"
+        },
+        "phone": {
+          "type": "string"
+        },
+        "location": {
+          "type": "string"
+        },
+        "portfolio": {
+          "type": "string"
+        },
+        "linkedin": {
+          "type": "string"
+        },
+        "github": {
+          "type": "string"
+        },
+        "bio": {
+          "type": "string"
+        },
+        "avatar": {
+          "type": "string"
+        },
+        "videoIntroUrl": {
+          "type": "string"
+        },
+        "experience": {
+          "type": "string"
+        },
+        "availability": {
+          "type": "string"
+        },
+        "skills": {
           "type": "array",
-          "items": {}
-        },
-        "photo": {
-          "type": "string"
-        },
-        "start_at": {
-          "type": "string"
-        },
-        "end_at": {
-          "type": "string"
-        },
-        "link": {
-          "type": "string"
-        },
-        "isEvent": {
-          "type": "boolean"
-        },
-        "event_name_ar": {
-          "type": "string"
-        },
-        "description_ar": {
-          "type": "string"
-        },
-        "event_location_ar": {
-          "type": "string"
-        },
-        "event_name_fr": {
-          "type": "string"
-        },
-        "description_fr": {
-          "type": "string"
-        },
-        "event_location_fr": {
-          "type": "string"
-        },
-        "coordinates": {
-          "type": "object",
-          "properties": {
-            "latitude": {
-              "type": "string"
-            },
-            "longitude": {
-              "type": "string"
-            }
+          "items": {
+            "type": "string"
           }
-        }
-      }
-    },
-    "Event": {
-      "properties": {
-        "gallery": {
+        },
+        "certifications": {
           "type": "array",
-          "items": {}
+          "items": {
+            "type": "string"
+          }
         },
-        "photo": {
-          "type": "string"
-        },
-        "start_at": {
-          "type": "string"
-        },
-        "end_at": {
-          "type": "string"
-        },
-        "link": {
-          "type": "string"
-        },
-        "isEvent": {
-          "type": "boolean"
-        },
-        "ar": {
-          "type": "object",
-          "properties": {
-            "event_name": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            },
-            "event_location": {
-              "type": "string"
+        "workExperience": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "company": {
+                "type": "string"
+              },
+              "position": {
+                "type": "string"
+              },
+              "startDate": {
+                "type": "string"
+              },
+              "endDate": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
             }
           }
         },
-        "fr": {
-          "type": "object",
-          "properties": {
-            "event_name": {
-              "type": "string"
-            },
-            "description": {
-              "type": "string"
-            },
-            "event_location": {
-              "type": "string"
+        "education": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "institution": {
+                "type": "string"
+              },
+              "degree": {
+                "type": "string"
+              },
+              "fieldOfStudy": {
+                "type": "string"
+              },
+              "startDate": {
+                "type": "string"
+              },
+              "endDate": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              }
             }
           }
         },
-        "coordinates": {
-          "type": "object",
-          "properties": {
-            "latitude": {
-              "type": "string"
-            },
-            "longitude": {
-              "type": "string"
-            }
+        "projects": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
-        },
-        "createdAt": {
-          "type": "string"
-        },
-        "updatedAt": {
-          "type": "string"
         }
       }
     }

@@ -45,10 +45,17 @@ app.use(cors());
 // Require APIs
 const userRoutes = require('./src/routes/user.route');
 const authRoutes = require('./src/routes/auth.route');
+const projectRoutes = require('./src/routes/project.route');
+const winnerRoutes = require('./src/routes/winners.route');
+const videoResuems = require('./src/routes/video.resumes');
 
 // local APIs
 app.use('/v1/api', authRoutes);
 app.use('/v1/api', userRoutes);
+app.use('/v1/api/project', projectRoutes);
+app.use('/v1/api/winner', winnerRoutes);
+app.use('/v1/api', winnerRoutes);
+app.use('/v1/api', videoResuems);
 
 // API for uploads file (photo, galleries)
 app.get('/uploads/:id', (req, res) => {
