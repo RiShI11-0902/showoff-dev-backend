@@ -323,9 +323,9 @@ const resetPassword = async (req, res) => {
   }
 };
 
-const logout = async (req,res)=>{
-  return res.status(200).json({ message: "User logged out" });
-}
+const logout = async (req, res) => {
+  return res.status(200).json({ message: 'User logged out' });
+};
 
 module.exports = {
   signUp,
@@ -333,5 +333,5 @@ module.exports = {
   adminSignIn,
   forgotPassword,
   resetPassword,
-  logout
+  logout,
 };
