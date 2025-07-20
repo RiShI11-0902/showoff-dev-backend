@@ -28,4 +28,6 @@ router.post('/auth/forget-password', authController.forgotPassword);
 // POST request - Send password reset link
 router.post('/auth/reset-password/:token', authController.resetPassword);
 
+router.post('/auth/logout', authController.logout);
+
 module.exports = router;
