@@ -35,7 +35,11 @@ const EducationItemSchema = new Schema(
 
 const UserSchema = new Schema({
   email: { type: String, unique: true, required: true },
-  password: { type: String, required: true },
+  password: { type: String, required: function(){
+    return !this.isOAuth
+  } },
+  githubId: { type: String, unique: true, sparse: true }, // 🔥 Add this line
+  isOAuth: { type: Boolean, default: false },
 
   // Existing fields
   fullName: String,

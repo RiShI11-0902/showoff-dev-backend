@@ -48,7 +48,7 @@ const authRoutes = require('./src/routes/auth.route');
 const projectRoutes = require('./src/routes/project.route');
 const winnerRoutes = require('./src/routes/winners.route');
 const videoResuems = require('./src/routes/video.resumes');
-const homepage = require('./src/routes/homepage.route')
+const homepage = require('./src/routes/homepage.route');
 
 // local APIs
 app.use('/v1/api', authRoutes);
@@ -57,7 +57,7 @@ app.use('/v1/api/project', projectRoutes);
 app.use('/v1/api/winner', winnerRoutes);
 app.use('/v1/api', winnerRoutes);
 app.use('/v1/api', videoResuems);
-app.use('/v1/api/homepage', homepage)
+app.use('/v1/api/homepage', homepage);
 
 // API for uploads file (photo, galleries)
 app.get('/uploads/:id', (req, res) => {
