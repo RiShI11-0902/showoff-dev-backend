@@ -13,6 +13,11 @@ const authController = require('../controllers/auth.controller');
 /*                                 Auth Route                                 */
 /* -------------------------------------------------------------------------- */
 
+
+router.get('/auth/github', authController.github);
+
+router.get('/auth/github/callback', authController.githubCallback);
+
 // POST request - create new user fileUpload
 router.post('/auth/register', authController.signUp);
 

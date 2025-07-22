@@ -30,11 +30,10 @@ const checkExistEmail = async (req, res) => {
  */
 const getCurrentUser = async (req, res) => {
   try {
-    const foundUser = await User.findById(req.decoded._id).populate({
+    const foundUser = await User.findById(req.decoded.id).populate({
       path: 'projects',
       populate: {
         path: 'user',
-        // select: 'fullName email avatar github ',
       },
     });
     res

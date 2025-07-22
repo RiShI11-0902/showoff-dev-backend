@@ -18,6 +18,7 @@ const {
 
 // Helpers
 const { sendEmail, FROM_EMAIL, API_ENDPOINT } = require('../utils/helpers');
+const { default: axios } = require('axios');
 
 /* -------------------------------------------------------------------------- */
 /*                                   HELPERS                                  */
@@ -28,6 +29,80 @@ const { sendEmail, FROM_EMAIL, API_ENDPOINT } = require('../utils/helpers');
  * @param {Object} req - Request object containing user data
  * @param {Object} res - Response object to send JSON response
  */
+
+const github = (req, res) => {
+  const redirectUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.GITHUB_CLIENT_ID}&scope=user:email`;
+  res.redirect(redirectUrl);
+};
+
+const githubCallback = async (req, res) => {
+  const { code } = req.query;
+
+  try {
+    // 1. Exchange code for access token
+    const tokenResponse = await axios.post(
+      `https://github.com/login/oauth/access_token`,
+      {
+        client_id: process.env.GITHUB_CLIENT_ID,
+        client_secret: process.env.GITHUB_CLIENT_SECRET,
+        code,
+      },
+      {
+        headers: { Accept: 'application/json' },
+      }
+    );
+
+    const accessToken = tokenResponse.data.access_token;
+
+    // 2. Get GitHub user info
+    const userResponse = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    // 3. Get user's primary email
+    const emailResponse = await axios.get('https://api.github.com/user/emails', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+
+    const primaryEmail = emailResponse.data.find(
+      (e) => e.primary && e.verified
+    )?.email;
+
+    const {
+      id: githubId,
+      login: username,
+      avatar_url,
+      name,
+    } = userResponse.data;
+
+    // 4. Check if user exists in DB
+    let user = await User.findOne({ githubId });
+
+    if (!user) {
+      user = await User.create({
+        githubId,
+        email: primaryEmail || `${username}@github.com`,
+        fullName: name || username,
+        avatar: avatar_url,
+        joined_at: new Date(),
+        role: 'developer',
+        isOAuth: true
+      });
+    }
+
+    // 5. Create JWT token
+    const token = jwt.sign({ id: user._id }, process.env.SECRET, {
+      expiresIn: '7d',
+    });
+
+    // 6. Redirect to frontend with token
+    res.redirect(`${process.env.FRONTEND_URL}/github-success?token=${token}`);
+  } catch (error) {
+    console.error('GitHub OAuth Error:', error);
+    res.redirect(`${process.env.FRONTEND_URL}/login`);
+  }
+};
+
 const signUp = async (req, res) => {
   try {
     const { email, password, fullName, role } = req.body;
@@ -51,6 +126,7 @@ const signUp = async (req, res) => {
 
     // Create a new user instance
     const newUser = new User({
+      isOAuth: false,
       email,
       password,
       confirmationCode: crypto.randomBytes(20).toString('hex'),
@@ -80,7 +156,7 @@ const signUp = async (req, res) => {
 
     // await sendEmail(data);
 
-    const token = jwt.sign(newUser.toJSON(), process.env.SECRET, {
+    const token = jwt.sign({id: newUser._id}, process.env.SECRET, {
       expiresIn: '7d', // Token expires in 7 days
     });
 
@@ -128,7 +204,7 @@ const signIn = async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign(foundUser.toJSON(), process.env.SECRET, {
+    const token = jwt.sign({id:foundUser._id}, process.env.SECRET, {
       expiresIn: '7d', // Token expires in 7 days
     });
 
@@ -334,4 +410,6 @@ module.exports = {
   forgotPassword,
   resetPassword,
   logout,
+  github,
+  githubCallback
 };
