@@ -69,7 +69,7 @@ const getVideoResumesByTags = async (req, res) => {
 
 const toggleLikeVideo = async (req, res) => {
   const { userId } = req.body;
-  const viewerId = req.decoded._id;
+  const viewerId = req.decoded.id;
 
   try {
     const user = await User.findById(userId);

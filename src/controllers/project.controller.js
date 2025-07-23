@@ -18,8 +18,8 @@ const createProject = async (req, res) => {
     const { title, description, link, technologies, isCompeting } = req.body;
     // console.log({ title, description, link, technologies });
 
-    const userId = req.decoded._id;
-    // console.log(userId);
+    const userId = req.decoded.id;
+    console.log(userId);
 
     const currentMonth = new Date().toISOString().slice(0, 7); // "2025-06"
 
@@ -123,7 +123,7 @@ const getProjectById = async (req, res) => {
 const updateProject = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const userId = req.decoded._id;
+    const userId = req.decoded.id;
 
     const project = await Project.findOne({ _id: projectId, user: userId });
     if (!project) {
@@ -155,7 +155,7 @@ const updateProject = async (req, res) => {
 const deleteProject = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const userId = req.decoded._id;
+    const userId = req.decoded.id;
 
     const project = await Project.findOne({ _id: projectId, user: userId });
     if (!project) {
@@ -190,7 +190,7 @@ const deleteProject = async (req, res) => {
 const voteProject = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const userId = req.decoded._id; // Get the logged-in user's ID
+    const userId = req.decoded.id; // Get the logged-in user's ID
     const currentMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
 
     const project = await Project.findById(projectId);
@@ -247,7 +247,7 @@ const voteProject = async (req, res) => {
 const submitProjectForCompetition = async (req, res) => {
   try {
     const { projectId } = req.params;
-    const userId = req.decoded._id;
+    const userId = req.decoded.id;
     const currentMonth = new Date().toISOString().slice(0, 7); // "YYYY-MM"
 
     const project = await Project.findById(projectId);
