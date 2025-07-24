@@ -46,7 +46,6 @@ const UserSchema = new Schema({
 
   // Existing fields
   fullName: String,
-  photo: String,
   is_active: { type: Boolean, default: true },
   role: { type: String }, // is_manager, is_admin, is_user
   confirmationCode: String,
@@ -57,6 +56,7 @@ const UserSchema = new Schema({
   title: String,
 
   // New fields
+  workEmail:String,
   phone: String,
   location: String,
   portfolio: String,

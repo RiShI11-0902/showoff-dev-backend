@@ -51,7 +51,12 @@ const getCurrentUser = async (req, res) => {
  */
 const getUserById = async (req, res) => {
   try {
-    const foundUser = await User.findById(req.params.id).populate('projects');
+    const foundUser = await User.findById(req.params.id).populate({
+      path:'projects',
+      populate:{
+        path:'user'
+      }
+    });
     res
       .status(foundUser ? 200 : 404)
       .json({ success: !!foundUser, user: foundUser });
@@ -68,18 +73,10 @@ const getUserById = async (req, res) => {
 const updateUserById = async (req, res) => {
   try {
     const { id } = req.params;
-    let foundUser = await User.findById(id);
-
-    const updateImages = {};
-    if (req.files?.photo) {
-      if (foundUser.photo !== '') fs.unlinkSync(foundUser.photo);
-      updateImages.photo = req.files.photo[0].path.replace('\\', '/');
-    }
 
     const updatedUser = await User.findByIdAndUpdate(
       id,
       {
-        ...updateImages,
         ...req.body,
         updated_at: Date.now(),
       },
@@ -89,8 +86,8 @@ const updateUserById = async (req, res) => {
     res.status(updatedUser ? 200 : 404).json({
       success: !!updatedUser,
       message: updatedUser
-        ? "Mise à jour réussie de l'utilisateur"
-        : 'Utilisateur non trouvé',
+        ? "Your Profile has been updated succesfully"
+        : 'Something went wrong',
       updatedUser,
     });
   } catch (error) {
