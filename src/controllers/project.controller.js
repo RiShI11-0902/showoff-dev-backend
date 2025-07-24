@@ -59,21 +59,34 @@ const createProject = async (req, res) => {
  */
 const getAllProjects = async (req, res) => {
   try {
-    const { month, isCompeting } = req.query;
+    const { month, isCompeting, page = 1, limit = 10 } = req.query;
 
     const filter = {};
     if (month) filter.submittedMonth = month;
-    if (typeof isCompeting === 'boolean') filter.isCompeting = isCompeting;
+    if (isCompeting !== undefined) filter.isCompeting = isCompeting === 'true';
 
-    const projects = await Project.find(filter).populate(
-      'user',
-      'fullName email avatar github',
-    );
-    res.status(200).json({ success: true, projects });
+    const skip = (Number(page) - 1) * Number(limit);
+
+    const [projects, total] = await Promise.all([
+      Project.find(filter)
+        .populate('user', 'fullName email avatar github')
+        .skip(skip)
+        .limit(Number(limit)),
+      Project.countDocuments(filter),
+    ]);
+
+    res.status(200).json({
+      success: true,
+      projects,
+      total,
+      page: Number(page),
+      pages: Math.ceil(total / limit),
+    });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 /**
  * Get all projects submitted by a specific user

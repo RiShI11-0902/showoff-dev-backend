@@ -49,7 +49,7 @@ const githubCallback = async (req, res) => {
       },
       {
         headers: { Accept: 'application/json' },
-      }
+      },
     );
 
     const accessToken = tokenResponse.data.access_token;
@@ -60,12 +60,15 @@ const githubCallback = async (req, res) => {
     });
 
     // 3. Get user's primary email
-    const emailResponse = await axios.get('https://api.github.com/user/emails', {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    });
+    const emailResponse = await axios.get(
+      'https://api.github.com/user/emails',
+      {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+    );
 
     const primaryEmail = emailResponse.data.find(
-      (e) => e.primary && e.verified
+      (e) => e.primary && e.verified,
     )?.email;
 
     const {
@@ -86,7 +89,7 @@ const githubCallback = async (req, res) => {
         avatar: avatar_url,
         joined_at: new Date(),
         role: 'developer',
-        isOAuth: true
+        isOAuth: true,
       });
     }
 
@@ -156,7 +159,7 @@ const signUp = async (req, res) => {
 
     // await sendEmail(data);
 
-    const token = jwt.sign({id: newUser._id}, process.env.SECRET, {
+    const token = jwt.sign({ id: newUser._id }, process.env.SECRET, {
       expiresIn: '7d', // Token expires in 7 days
     });
 
@@ -204,7 +207,7 @@ const signIn = async (req, res) => {
     }
 
     // Generate JWT token
-    const token = jwt.sign({id:foundUser._id}, process.env.SECRET, {
+    const token = jwt.sign({ id: foundUser._id }, process.env.SECRET, {
       expiresIn: '7d', // Token expires in 7 days
     });
 
@@ -411,5 +414,5 @@ module.exports = {
   resetPassword,
   logout,
   github,
-  githubCallback
+  githubCallback,
 };
