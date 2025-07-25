@@ -116,7 +116,7 @@ const getProjectById = async (req, res) => {
     const { projectId } = req.params;
     const project = await Project.findById(projectId).populate(
       'user',
-      'fullName avatar _id github',
+      'fullName avatar _id title',
     );
     res.status(project ? 200 : 404).json({
       success: !!project,
